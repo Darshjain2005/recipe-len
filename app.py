@@ -20,7 +20,7 @@ import logging
 app = Flask(__name__)
 
 # CORS: Allow requests from any origin (Vercel frontend)
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

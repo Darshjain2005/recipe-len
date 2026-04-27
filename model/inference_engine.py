@@ -78,7 +78,7 @@ Output format:
 
         try:
             response = self._client.chat.completions.create(
-                model="meta-llama/llama-4-scout-17b-16e-instruct",
+                model="llama-3.2-11b-vision-preview",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {
@@ -147,13 +147,13 @@ Output format:
 
         try:
             response = self._client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_msg}
                 ],
                 temperature=0.2,
-                max_tokens=2000
+                max_tokens=1024
             )
 
             raw = response.choices[0].message.content.strip()
@@ -235,13 +235,13 @@ Output format:
 
         try:
             response = self._client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_msg}
                 ],
                 temperature=0.15,
-                max_tokens=4000
+                max_tokens=1500
             )
 
             raw = response.choices[0].message.content.strip()
@@ -307,7 +307,7 @@ Run NER inference."""
                     {"role": "user", "content": user_msg}
                 ],
                 temperature=0.1,
-                max_tokens=500
+                max_tokens=400
             )
             
             raw_text = response.choices[0].message.content.strip()
