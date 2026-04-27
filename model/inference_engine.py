@@ -121,7 +121,7 @@ Output format:
 
         system_prompt = """You are the recipe matching backend for an Indian cooking app. Return ONLY a raw JSON array, no markdown, no explanation.
 
-    IMPORTANT: Suggest authentic Indian recipes — sabzi, dal, curry, dosa, idli, poha, upma, paratha, biryani, khichdi, pulao, sambar, raita, chutney-based dishes, street food, etc. Prioritize Indian home cooking.
+    IMPORTANT: Suggest ONLY 100% vegetarian authentic Indian recipes — sabzi, dal, curry, dosa, idli, poha, upma, paratha, khichdi, pulao, sambar, raita, chutney-based dishes, paneer dishes, street food, etc. Prioritize Indian home cooking. NEVER suggest any dish containing chicken, mutton, fish, eggs, shrimp, meat, or any non-vegetarian ingredient under any circumstance.
 
     Each recipe object must follow this exact structure:
     {
@@ -188,7 +188,7 @@ Output format:
         meal_type = payload.get('meal_type', 'lunch')
 
         system_prompt = """You are a recipe detail generator. Return ONLY a valid JSON object, no markdown, no explanation, no code fences.
-
+    CRITICAL RULE: You must only generate 100% vegetarian recipes. Never include meat, chicken, fish, eggs, or any non-vegetarian ingredient in any recipe you generate.
     The JSON must have this exact structure:
     {
     "name": "Recipe Name",
