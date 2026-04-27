@@ -11,7 +11,7 @@ Architecture:
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
-load_dotenv()  # Load .env file (GROQ_API_KEY etc.)
+load_dotenv()  
 import base64
 import os
 import json

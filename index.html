@@ -1,564 +1,645 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recipe Lens — AI Cooking Assistant</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --card: #16161f;
-    --border: rgba(255,255,255,0.07);
-    --gold: #f5c842;
-    --gold-dim: #c8a228;
-    --green: #4ade80;
-    --orange: #fb923c;
-    --text: #f0ede8;
-    --muted: #8a8799;
-    --radius: 20px;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe Lens — AI Cooking Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --card: #16161f;
+      --border: rgba(255, 255, 255, 0.07);
+      --gold: #f5c842;
+      --gold-dim: #c8a228;
+      --green: #4ade80;
+      --orange: #fb923c;
+      --text: #f0ede8;
+      --muted: #8a8799;
+      --radius: 20px;
+    }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-  /* Background texture */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: 
-      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(245,200,66,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 60% at 80% 80%, rgba(74,222,128,0.04) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
+    /* Background texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 20%, rgba(245, 200, 66, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(74, 222, 128, 0.04) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  /* Grid overlay */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: 
-      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-    z-index: 0;
-  }
+    /* Grid overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  /* ── NAV ── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    padding: 20px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(10,10,15,0.8);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-  }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
 
-  .logo-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--gold), var(--orange));
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-  }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
 
-  .logo-text {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.02em;
-  }
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
 
-  .logo-text span {
-    color: var(--gold);
-  }
+    .logo-text span {
+      color: var(--gold);
+    }
 
-  nav .badge {
-    background: rgba(245,200,66,0.1);
-    border: 1px solid rgba(245,200,66,0.3);
-    color: var(--gold);
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+    nav .badge {
+      background: rgba(245, 200, 66, 0.1);
+      border: 1px solid rgba(245, 200, 66, 0.3);
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
 
-  /* ── HERO ── */
-  .hero {
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 120px 40px 60px;
-    text-align: center;
-  }
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 40px 60px;
+      text-align: center;
+    }
 
-  .hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(74,222,128,0.08);
-    border: 1px solid rgba(74,222,128,0.2);
-    color: var(--green);
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 6px 16px;
-    border-radius: 20px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 32px;
-    animation: fadeDown 0.6s ease both;
-  }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      color: var(--green);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 20px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      animation: fadeDown 0.6s ease both;
+    }
 
-  .hero-eyebrow::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    background: var(--green);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.3); }
-  }
+    @keyframes pulse {
 
-  .hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(3.5rem, 8vw, 7rem);
-    font-weight: 900;
-    line-height: 1.0;
-    letter-spacing: -0.03em;
-    margin-bottom: 24px;
-    animation: fadeDown 0.6s ease 0.1s both;
-  }
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
 
-  .hero h1 .line-gold {
-    color: var(--gold);
-    display: block;
-  }
+      50% {
+        opacity: 0.5;
+        transform: scale(1.3);
+      }
+    }
 
-  .hero h1 .line-white {
-    color: var(--text);
-    display: block;
-  }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      animation: fadeDown 0.6s ease 0.1s both;
+    }
 
-  .hero p {
-    font-size: 1.15rem;
-    color: var(--muted);
-    max-width: 520px;
-    line-height: 1.7;
-    margin: 0 auto 60px;
-    animation: fadeDown 0.6s ease 0.2s both;
-  }
+    .hero h1 .line-gold {
+      color: var(--gold);
+      display: block;
+    }
 
-  /* ── CARDS ── */
-  .cards-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    max-width: 860px;
-    width: 100%;
-    animation: fadeUp 0.7s ease 0.3s both;
-  }
+    .hero h1 .line-white {
+      color: var(--text);
+      display: block;
+    }
 
-  .chef-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 40px 36px;
-    text-decoration: none;
-    color: var(--text);
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-  }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin: 0 auto 60px;
+      animation: fadeDown 0.6s ease 0.2s both;
+    }
 
-  .chef-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 24px;
-  }
+    /* ── CARDS ── */
+    .cards-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 860px;
+      width: 100%;
+      animation: fadeUp 0.7s ease 0.3s both;
+    }
 
-  .vision-card::before {
-    background: radial-gradient(ellipse at top left, rgba(245,200,66,0.1) 0%, transparent 60%);
-  }
+    .chef-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      text-decoration: none;
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
 
-  .voice-card::before {
-    background: radial-gradient(ellipse at top left, rgba(74,222,128,0.1) 0%, transparent 60%);
-  }
+    .chef-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 24px;
+    }
 
-  .chef-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 32px 64px rgba(0,0,0,0.5);
-  }
+    .vision-card::before {
+      background: radial-gradient(ellipse at top left, rgba(245, 200, 66, 0.1) 0%, transparent 60%);
+    }
 
-  .chef-card:hover::before { opacity: 1; }
+    .voice-card::before {
+      background: radial-gradient(ellipse at top left, rgba(74, 222, 128, 0.1) 0%, transparent 60%);
+    }
 
-  .vision-card:hover { border-color: rgba(245,200,66,0.3); }
-  .voice-card:hover { border-color: rgba(74,222,128,0.3); }
+    .chef-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 32px 64px rgba(0, 0, 0, 0.5);
+    }
 
-  .card-icon-wrap {
-    width: 72px;
-    height: 72px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    margin-bottom: 24px;
-    position: relative;
-  }
+    .chef-card:hover::before {
+      opacity: 1;
+    }
 
-  .vision-card .card-icon-wrap {
-    background: linear-gradient(135deg, rgba(245,200,66,0.15), rgba(251,146,60,0.15));
-    border: 1px solid rgba(245,200,66,0.2);
-  }
+    .vision-card:hover {
+      border-color: rgba(245, 200, 66, 0.3);
+    }
 
-  .voice-card .card-icon-wrap {
-    background: linear-gradient(135deg, rgba(74,222,128,0.15), rgba(56,189,248,0.15));
-    border: 1px solid rgba(74,222,128,0.2);
-  }
+    .voice-card:hover {
+      border-color: rgba(74, 222, 128, 0.3);
+    }
 
-  .card-badge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
+    .card-icon-wrap {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 24px;
+      position: relative;
+    }
 
-  .vision-card .card-badge {
-    background: rgba(245,200,66,0.1);
-    color: var(--gold);
-    border: 1px solid rgba(245,200,66,0.2);
-  }
+    .vision-card .card-icon-wrap {
+      background: linear-gradient(135deg, rgba(245, 200, 66, 0.15), rgba(251, 146, 60, 0.15));
+      border: 1px solid rgba(245, 200, 66, 0.2);
+    }
 
-  .voice-card .card-badge {
-    background: rgba(74,222,128,0.1);
-    color: var(--green);
-    border: 1px solid rgba(74,222,128,0.2);
-  }
+    .voice-card .card-icon-wrap {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.15), rgba(56, 189, 248, 0.15));
+      border: 1px solid rgba(74, 222, 128, 0.2);
+    }
 
-  .card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 12px;
-    letter-spacing: -0.02em;
-  }
+    .card-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
 
-  .card-desc {
-    font-size: 0.92rem;
-    color: var(--muted);
-    line-height: 1.65;
-    margin-bottom: 28px;
-  }
+    .vision-card .card-badge {
+      background: rgba(245, 200, 66, 0.1);
+      color: var(--gold);
+      border: 1px solid rgba(245, 200, 66, 0.2);
+    }
 
-  .card-features {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 32px;
-  }
+    .voice-card .card-badge {
+      background: rgba(74, 222, 128, 0.1);
+      color: var(--green);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+    }
 
-  .card-features li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.85rem;
-    color: rgba(240,237,232,0.7);
-  }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
 
-  .feature-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+    .card-desc {
+      font-size: 0.92rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
 
-  .vision-card .feature-dot { background: var(--gold); }
-  .voice-card .feature-dot { background: var(--green); }
+    .card-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
 
-  .card-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    padding: 12px 24px;
-    border-radius: 12px;
-    transition: gap 0.2s ease, opacity 0.2s ease;
-  }
+    .card-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: rgba(240, 237, 232, 0.7);
+    }
 
-  .vision-card .card-cta {
-    background: linear-gradient(135deg, var(--gold), var(--orange));
-    color: #0a0a0f;
-  }
+    .feature-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
 
-  .voice-card .card-cta {
-    background: linear-gradient(135deg, var(--green), #22d3ee);
-    color: #0a0a0f;
-  }
+    .vision-card .feature-dot {
+      background: var(--gold);
+    }
 
-  .chef-card:hover .card-cta { gap: 14px; }
+    .voice-card .feature-dot {
+      background: var(--green);
+    }
 
-  /* ── STATS ── */
-  .stats-row {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    gap: 0;
-    max-width: 860px;
-    width: 100%;
-    margin: 0 auto;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    overflow: hidden;
-    background: var(--card);
-    animation: fadeUp 0.7s ease 0.5s both;
-  }
+    .card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 12px;
+      transition: gap 0.2s ease, opacity 0.2s ease;
+    }
 
-  .stat-item {
-    flex: 1;
-    padding: 28px;
-    text-align: center;
-    border-right: 1px solid var(--border);
-    position: relative;
-  }
+    .vision-card .card-cta {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: #0a0a0f;
+    }
 
-  .stat-item:last-child { border-right: none; }
+    .voice-card .card-cta {
+      background: linear-gradient(135deg, var(--green), #22d3ee);
+      color: #0a0a0f;
+    }
 
-  .stat-value {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--gold);
-    display: block;
-    letter-spacing: -0.02em;
-  }
+    .chef-card:hover .card-cta {
+      gap: 14px;
+    }
 
-  .stat-label {
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
+    /* ── STATS ── */
+    .stats-row {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 0;
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--card);
+      animation: fadeUp 0.7s ease 0.5s both;
+    }
 
-  /* ── FOOTER ── */
-  footer {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    padding: 40px;
-    color: var(--muted);
-    font-size: 0.82rem;
-    border-top: 1px solid var(--border);
-    margin-top: 80px;
-  }
+    .stat-item {
+      flex: 1;
+      padding: 28px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
 
-  /* ── FLOATING FOOD EMOJIS ── */
-  .floaters {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-  }
+    .stat-item:last-child {
+      border-right: none;
+    }
 
-  .float-emoji {
-    position: absolute;
-    font-size: 2rem;
-    animation: floatUp linear infinite;
-    opacity: 0;
-  }
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--gold);
+      display: block;
+      letter-spacing: -0.02em;
+    }
 
-  @keyframes floatUp {
-    0% { transform: translateY(110vh) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.15; }
-    90% { opacity: 0.1; }
-    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
-  }
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
 
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      border-top: 1px solid var(--border);
+      margin-top: 80px;
+    }
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+    /* ── FLOATING FOOD EMOJIS ── */
+    .floaters {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
 
-  @media (max-width: 680px) {
-    .cards-wrapper { grid-template-columns: 1fr; }
-    nav { padding: 16px 20px; }
-    .hero { padding: 100px 20px 40px; }
-    .hero h1 { font-size: 3rem; }
-    .stats-row { flex-wrap: wrap; }
-    .stat-item { flex: 0 0 50%; border-bottom: 1px solid var(--border); }
-  }
-</style>
+    .float-emoji {
+      position: absolute;
+      font-size: 2rem;
+      animation: floatUp linear infinite;
+      opacity: 0;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(110vh) rotate(0deg);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.15;
+      }
+
+      90% {
+        opacity: 0.1;
+      }
+
+      100% {
+        transform: translateY(-10vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes fadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 680px) {
+      .cards-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        padding: 16px 20px;
+      }
+
+      .hero {
+        padding: 100px 20px 40px;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+      }
+
+      .stats-row {
+        flex-wrap: wrap;
+      }
+
+      .stat-item {
+        flex: 0 0 50%;
+        border-bottom: 1px solid var(--border);
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- Floating emojis background -->
-<div class="floaters" id="floaters"></div>
+  <!-- Floating emojis background -->
+  <div class="floaters" id="floaters"></div>
 
-<!-- Nav -->
-<nav>
-  <a href="/" class="logo">
-    <div class="logo-icon">🔍</div>
-    <span class="logo-text">Recipe<span>Lens</span></span>
-  </a>
-  <span class="badge">AI Powered</span>
-</nav>
-
-<!-- Hero -->
-<section class="hero">
-  <div class="hero-eyebrow">
-    Vision & Voice Powered Cooking
-  </div>
-  
-  <h1>
-    <span class="line-white">Cook Smarter</span>
-    <span class="line-gold">With What You Have</span>
-  </h1>
-  
-  <p>
-    Point your camera at ingredients or simply speak — our AI identifies what you have 
-    and crafts perfect recipes with real-time voice guidance. No recipes memorized, just results.
-  </p>
-
-  <!-- Mode Cards -->
-  <div class="cards-wrapper">
-
-    <a href="/vision-chef" class="chef-card vision-card">
-      <span class="card-badge">📸 Vision</span>
-      <div class="card-icon-wrap">👁️</div>
-      <h2 class="card-title">Vision Chef</h2>
-      <p class="card-desc">
-        Snap or upload a photo of your vegetables and ingredients. Our model detects everything instantly.
-      </p>
-      <ul class="card-features">
-        <li><span class="feature-dot"></span> Real-time ingredient detection</li>
-        <li><span class="feature-dot"></span> Camera & gallery support</li>
-        <li><span class="feature-dot"></span> Filter by nutrition & diet</li>
-        <li><span class="feature-dot"></span> Voice-guided cooking mode</li>
-      </ul>
-      <span class="card-cta">Start Scanning →</span>
+  <!-- Nav -->
+  <nav>
+    <a href="/" class="logo">
+      <div class="logo-icon">🔍</div>
+      <span class="logo-text">Recipe<span>Lens</span></span>
     </a>
+    <span class="badge">If You Smell, What The Chef Is Cookin'</span>
+  </nav>
 
-    <a href="/voice-chef" class="chef-card voice-card">
-      <span class="card-badge">🎙️ Voice</span>
-      <div class="card-icon-wrap">🗣️</div>
-      <h2 class="card-title">Voice Chef</h2>
-      <p class="card-desc">
-        Just speak — "I have tomatoes, onions and paneer" or "I want to make poha". We'll handle the rest.
-      </p>
-      <ul class="card-features">
-        <li><span class="feature-dot"></span> Natural language understanding</li>
-        <li><span class="feature-dot"></span> Hindi & English support</li>
-        <li><span class="feature-dot"></span> Smart ingredient parsing</li>
-        <li><span class="feature-dot"></span> Hands-free recipe mode</li>
-      </ul>
-      <span class="card-cta">Start Talking →</span>
-    </a>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      Vision & Voice Powered Cooking
+    </div>
 
+    <h1>
+      <span class="line-white">Cook Smarter</span>
+      <span class="line-gold">With What You Have</span>
+    </h1>
+
+    <p>
+      Point your camera at ingredients or simply speak — We'll identify what you have
+      and craft perfect recipes with real-time voice guidance. No recipes memorized, just results.
+    </p>
+
+    <!-- Mode Cards -->
+    <div class="cards-wrapper">
+
+      <a href="/vision-chef" class="chef-card vision-card">
+        <span class="card-badge">📸 Vision</span>
+        <div class="card-icon-wrap">👁️</div>
+        <h2 class="card-title">Vision Chef</h2>
+        <p class="card-desc">
+          Snap or upload a photo of your vegetables and ingredients. Our model detects everything instantly.
+        </p>
+        <ul class="card-features">
+          <li><span class="feature-dot"></span> Real-time ingredient detection</li>
+          <li><span class="feature-dot"></span> Camera & gallery support</li>
+          <li><span class="feature-dot"></span> Filter by nutrition & diet</li>
+          <li><span class="feature-dot"></span> Voice-guided cooking mode</li>
+        </ul>
+        <span class="card-cta">Start Scanning →</span>
+      </a>
+
+      <a href="/voice-chef" class="chef-card voice-card">
+        <span class="card-badge">🎙️ Voice</span>
+        <div class="card-icon-wrap">🗣️</div>
+        <h2 class="card-title">Voice Chef</h2>
+        <p class="card-desc">
+          Just speak — "I have tomatoes, onions and paneer" or "I want to make poha". We'll handle the rest.
+        </p>
+        <ul class="card-features">
+          <li><span class="feature-dot"></span> Natural language understanding</li>
+          <li><span class="feature-dot"></span> Hindi & English support</li>
+          <li><span class="feature-dot"></span> Smart ingredient parsing</li>
+          <li><span class="feature-dot"></span> Hands-free recipe mode</li>
+        </ul>
+        <span class="card-cta">Start Talking →</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div style="position:relative;z-index:1;padding:0 40px;max-width:860px;margin:0 auto;">
+    <div class="stats-row">
+      <div class="stat-item">
+        <span class="stat-value">C</span>
+        <span class="stat-label">CREATIVE</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">H</span>
+        <span class="stat-label">HANDS-FREE</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">E</span>
+        <span class="stat-label">EFFICIENT</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">F</span>
+        <span class="stat-label">FOOD GUIDE</span>
+      </div>
+    </div>
   </div>
-</section>
 
-<!-- Stats -->
-<div style="position:relative;z-index:1;padding:0 40px;max-width:860px;margin:0 auto;">
-  <div class="stats-row">
-    <div class="stat-item">
-      <span class="stat-value">200+</span>
-      <span class="stat-label">Ingredients Recognized</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">50K+</span>
-      <span class="stat-label">Recipes in Database</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">98%</span>
-      <span class="stat-label">Detection Accuracy</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value">100%</span>
-      <span class="stat-label">Hands-Free Cooking</span>
-    </div>
-  </div>
-</div>
+  <!-- Footer -->
+  <footer>
+    <p>Recipe Lens · Smart Cooking Assistant · Built with Vision & Voice Intelligence</p>
+  </footer>
 
-<!-- Footer -->
-<footer>
-  <p>Recipe Lens · AI-Powered Cooking Assistant · Built with Vision & Voice Intelligence</p>
-</footer>
+  <script>
+    // Floating emojis
+    const emojis = ['🍅', '🧅', '🥔', '🫑', '🥦', '🌽', '🍋', '🧄', '🫚', '🥕', '🍄', '🫛', '🌿', '🫙'];
+    const container = document.getElementById('floaters');
 
-<script>
-  // Floating emojis
-  const emojis = ['🍅','🧅','🥔','🫑','🥦','🌽','🍋','🧄','🫚','🥕','🍄','🫛','🌿','🫙'];
-  const container = document.getElementById('floaters');
-  
-  function createFloat() {
-    const el = document.createElement('span');
-    el.className = 'float-emoji';
-    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-    el.style.left = Math.random() * 100 + 'vw';
-    el.style.animationDuration = (12 + Math.random() * 10) + 's';
-    el.style.animationDelay = (Math.random() * 8) + 's';
-    el.style.fontSize = (1.2 + Math.random() * 1.5) + 'rem';
-    container.appendChild(el);
-    setTimeout(() => el.remove(), 25000);
-  }
-  
-  for (let i = 0; i < 15; i++) {
-    setTimeout(createFloat, i * 800);
-  }
-  setInterval(createFloat, 1500);
-</script>
+    function createFloat() {
+      const el = document.createElement('span');
+      el.className = 'float-emoji';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.animationDuration = (12 + Math.random() * 10) + 's';
+      el.style.animationDelay = (Math.random() * 8) + 's';
+      el.style.fontSize = (1.2 + Math.random() * 1.5) + 'rem';
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 25000);
+    }
+
+    for (let i = 0; i < 15; i++) {
+      setTimeout(createFloat, i * 800);
+    }
+    setInterval(createFloat, 1500);
+  </script>
 </body>
+
 </html>
