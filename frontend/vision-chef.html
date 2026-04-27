@@ -840,7 +840,7 @@
 
   <script>
     // ── Config ──
-    const API_BASE = 'https://your-backend.onrender.com';
+    const API_BASE = 'https://recipe-lens-api.onrender.com';
 
     // ── State ──
     let selectedMeal = null;
@@ -938,7 +938,7 @@
       document.getElementById('ingredients-section').scrollIntoView({ behavior: 'smooth' });
 
       try {
-        const res = await fetch(API_BASE + '/api/detect-ingredients', {
+        const res = await fetch(`${API_BASE}/api/detect-ingredients`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: capturedImageB64 })
@@ -1016,7 +1016,7 @@
       document.getElementById('recipes-section').scrollIntoView({ behavior: 'smooth' });
 
       try {
-        const res = await fetch(API_BASE + '/api/suggest-recipes', {
+        const res = await fetch(`${API_BASE}/api/suggest-recipes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

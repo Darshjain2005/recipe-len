@@ -1548,7 +1548,7 @@
 
   <script>
     // ── Config ──
-    const API_BASE = 'https://your-backend.onrender.com';
+    const API_BASE = 'https://recipe-lens-api.onrender.com';
 
     let recipeBase = null, recipeDetail = null, ingredients = [], mealType = 'lunch';
     let currentServings = 2, baseServings = 2, currentStep = 0;
@@ -1580,7 +1580,7 @@
 
     async function loadDetail() {
       try {
-        const res = await fetch(API_BASE + '/api/recipe-detail', {
+        const res = await fetch(`${API_BASE}/api/recipe-detail`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ recipe_name: recipeBase.name, ingredients, servings: currentServings, meal_type: mealType })
         });

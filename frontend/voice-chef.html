@@ -742,7 +742,7 @@
 
   <script>
     // ── Config ──
-    const API_BASE = 'https://your-backend.onrender.com';
+    const API_BASE = 'https://recipe-lens-api.onrender.com';
 
     let selectedMeal = null;
     let parsedIngredients = [];
@@ -831,7 +831,7 @@
       document.getElementById('parsed-section').scrollIntoView({ behavior: 'smooth' });
 
       try {
-        const res = await fetch(API_BASE + '/api/parse-voice-input', {
+        const res = await fetch(`${API_BASE}/api/parse-voice-input`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text, meal_type: selectedMeal })
@@ -908,7 +908,7 @@
       document.getElementById('recipes-section').scrollIntoView({ behavior: 'smooth' });
 
       try {
-        const res = await fetch(API_BASE + '/api/suggest-recipes', {
+        const res = await fetch(`${API_BASE}/api/suggest-recipes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
