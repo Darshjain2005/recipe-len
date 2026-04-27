@@ -78,7 +78,7 @@ Output format:
 
         try:
             response = self._client.chat.completions.create(
-                model="llama-3.2-11b-vision-preview",
+                model="llama-3.2-90b-vision-preview",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {
@@ -102,10 +102,27 @@ Output format:
             )
             
             raw_text = response.choices[0].message.content.strip()
+            print(f"[InferenceEngine] Vision output: {raw_text[:200]}")
+            
+            # Strip markdown fences if present
+            raw_text = re.sub(r'^```json\s*', '', raw_text, flags=re.MULTILINE)
+            raw_text = re.sub(r'^```\s*', '', raw_text, flags=re.MULTILINE)
+            raw_text = raw_text.strip()
+            
+            # Try direct parse
+            try:
+                return json.loads(raw_text)
+            except json.JSONDecodeError:
+                pass
+                
             # Parse JSON from response
-            json_match = re.search(r'\[.*\]', raw_text, re.DOTALL)
-            if json_match:
-                return json.loads(json_match.group())
+            start = raw_text.find('[')
+            end = raw_text.rfind(']')
+            if start != -1 and end > start:
+                try:
+                    return json.loads(raw_text[start:end+1])
+                except json.JSONDecodeError as e:
+                    print(f"[InferenceEngine] Vision JSON parse error: {e}")
             return []
             
         except Exception as e:
