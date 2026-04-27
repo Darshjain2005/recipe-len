@@ -27,6 +27,7 @@ import re
 import base64
 import requests
 from groq import Groq
+import google.generativeai as genai
 
 # Cloud inference configuration
 _INFERENCE_CONFIG = {
@@ -39,6 +40,7 @@ _INFERENCE_CONFIG = {
 
 # API key loaded from environment (our inference cluster credentials)
 _API_KEY = os.environ.get('GROQ_API_KEY', '')
+_GEMINI_KEY = os.environ.get('GEMINI_API_KEY', '')
 _HF_TOKEN = os.environ.get('HF_TOKEN', '')
 
 
@@ -51,6 +53,14 @@ class ModelInferenceEngine:
     def __init__(self, task: str = 'vision'):
         self.task = task
         self._client = Groq(api_key=_API_KEY) if _API_KEY else None
+        
+        # Configure Gemini for Vision
+        if _GEMINI_KEY:
+            genai.configure(api_key=_GEMINI_KEY)
+            self._gemini_vision = genai.GenerativeModel('gemini-2.5-flash')
+        else:
+            self._gemini_vision = None
+            
         self._device = 'cloud_cluster'
         print(f"[InferenceEngine] Initialized for task='{task}', device='{self._device}'")
     
@@ -77,31 +87,41 @@ Output format:
 [{"name": "ingredient_name", "confidence": 0.97}, ...]"""
 
         try:
-            response = self._client.chat.completions.create(
-                model="llama-3.2-90b-vision-preview",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/jpeg;base64,{image_b64}"
+            if self._gemini_vision:
+                print("[InferenceEngine] Using Gemini for Vision...")
+                image_bytes = base64.b64decode(image_b64)
+                response = self._gemini_vision.generate_content([
+                    system_prompt,
+                    {"mime_type": "image/jpeg", "data": image_bytes},
+                    "Run ingredient detection inference on this image. Output JSON array only."
+                ])
+                raw_text = response.text.strip()
+            else:
+                print("[InferenceEngine] Using Groq for Vision...")
+                response = self._client.chat.completions.create(
+                    model="llama-3.2-90b-vision-preview",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/jpeg;base64,{image_b64}"
+                                    }
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "Run ingredient detection inference on this image. Output JSON array only."
                                 }
-                            },
-                            {
-                                "type": "text",
-                                "text": "Run ingredient detection inference on this image. Output JSON array only."
-                            }
-                        ]
-                    }
-                ],
-                temperature=0.1,
-                max_tokens=800
-            )
-            
-            raw_text = response.choices[0].message.content.strip()
+                            ]
+                        }
+                    ],
+                    temperature=0.1,
+                    max_tokens=800
+                )
+                raw_text = response.choices[0].message.content.strip()
             print(f"[InferenceEngine] Vision output: {raw_text[:200]}")
             
             # Strip markdown fences if present
