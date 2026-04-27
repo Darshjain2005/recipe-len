@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Chef — Recipe Lens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --card: #16161f;
+      --card2: #1c1c27;
+      --border: rgba(255, 255, 255, 0.07);
+      --gold: #f5c842;
+      --orange: #fb923c;
+      --green: #4ade80;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --text: #f0ede8;
+      --muted: #8a8799;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 70% 0%, rgba(167, 139, 250, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.88rem;
+      transition: color 0.2s;
+    }
+
+    .back-btn:hover {
+      color: var(--text);
+    }
+
+    .nav-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: rgba(167, 139, 250, 0.1);
+      border: 1px solid rgba(167, 139, 250, 0.25);
+      color: var(--purple);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .main {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 32px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .section-sub {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    /* ── MEAL ── */
+    .meal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .meal-btn {
+      background: var(--card2);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 12px;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-align: center;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meal-btn:hover {
+      border-color: rgba(167, 139, 250, 0.3);
+      transform: translateY(-3px);
+    }
+
+    .meal-btn.selected {
+      border-color: var(--purple);
+      background: rgba(167, 139, 250, 0.07);
+    }
+
+    .meal-emoji {
+      font-size: 2.2rem;
+    }
+
+    .meal-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    /* ── VOICE INPUT ── */
+    .voice-hub {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Mic orb */
+    .mic-orb-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 0;
+    }
+
+    .mic-orb {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(96, 165, 250, 0.2));
+      border: 2px solid rgba(167, 139, 250, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .mic-orb:hover {
+      border-color: var(--purple);
+      transform: scale(1.05);
+    }
+
+    .mic-orb.listening {
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.35), rgba(96, 165, 250, 0.3));
+      border-color: var(--purple);
+      animation: orbPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes orbPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.3);
+        transform: scale(1);
+      }
+
+      50% {
+        box-shadow: 0 0 0 20px rgba(167, 139, 250, 0);
+        transform: scale(1.04);
+      }
+    }
+
+    /* Waveform bars */
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 32px;
+    }
+
+    .wave-bar {
+      width: 4px;
+      background: var(--purple);
+      border-radius: 4px;
+      height: 8px;
+      transition: height 0.15s ease;
+      animation: none;
+    }
+
+    .waveform.active .wave-bar {
+      animation: waveBounce 0.6s ease-in-out infinite;
+    }
+
+    .wave-bar:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .wave-bar:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .wave-bar:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    .wave-bar:nth-child(4) {
+      animation-delay: 0.1s;
+    }
+
+    .wave-bar:nth-child(5) {
+      animation-delay: 0.0s;
+    }
+
+    .wave-bar:nth-child(6) {
+      animation-delay: 0.15s;
+    }
+
+    .wave-bar:nth-child(7) {
+      animation-delay: 0.05s;
+    }
+
+    @keyframes waveBounce {
+
+      0%,
+      100% {
+        height: 6px;
+      }
+
+      50% {
+        height: 28px;
+      }
+    }
+
+    .mic-status {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .mic-status.listening {
+      color: var(--purple);
+      font-weight: 500;
+    }
+
+    /* Text input area */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .voice-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 18px;
+      background: var(--card2);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.6;
+      resize: vertical;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .voice-textarea:focus {
+      border-color: rgba(167, 139, 250, 0.4);
+    }
+
+    .voice-textarea::placeholder {
+      color: var(--muted);
+    }
+
+    .example-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .example-chip {
+      background: rgba(167, 139, 250, 0.07);
+      border: 1px solid rgba(167, 139, 250, 0.2);
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      color: var(--purple);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .example-chip:hover {
+      background: rgba(167, 139, 250, 0.15);
+    }
+
+    .parse-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .parse-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    /* ── PARSED RESULT ── */
+    .parsed-panel {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .parsed-panel.show {
+      display: flex;
+    }
+
+    .parsed-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: rgba(74, 222, 128, 0.06);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      border-radius: 14px;
+    }
+
+    .parsed-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .ingredient-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      border-color: var(--green);
+      background: rgba(74, 222, 128, 0.07);
+      color: var(--green);
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .filter-chip {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--muted);
+    }
+
+    .filter-chip.active {
+      border-color: var(--gold);
+      background: rgba(245, 200, 66, 0.08);
+      color: var(--gold);
+    }
+
+    .primary-btn {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      border: none;
+      border-radius: 12px;
+      color: #0a0a0f;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .primary-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    /* ── RECIPES ── */
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .recipe-card {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .recipe-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--purple), var(--blue));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .recipe-card:hover {
+      border-color: rgba(167, 139, 250, 0.3);
+      transform: translateY(-4px);
+    }
+
+    .recipe-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .recipe-emoji {
+      font-size: 2.6rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .recipe-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .recipe-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .recipe-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meta-tag {
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+    }
+
+    .match-score {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--green);
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(167, 139, 250, 0.15);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-overlay {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .loading-overlay.show {
+      display: flex;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 600px) {
+      .recipes-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .main {
+        padding: 24px 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a href="index.html" class="back-btn">← Back</a>
+    <span class="nav-title">🗣️ Voice Chef</span>
+    <span class="nav-badge">🎙️ NLP Voice Model</span>
+  </nav>
+
+  <div class="main">
+
+    <!-- Step 1: Meal -->
+    <div class="section-card">
+      <h2 class="section-title">What are you planning?</h2>
+      <p class="section-sub">Select your meal to get perfectly timed recipes</p>
+      <div class="meal-grid">
+        <button class="meal-btn" onclick="selectMeal('breakfast', this)">
+          <span class="meal-emoji">🌅</span><span class="meal-label">Breakfast</span>
+        </button>
+        <button class="meal-btn" onclick="selectMeal('lunch', this)">
+          <span class="meal-emoji">☀️</span><span class="meal-label">Lunch</span>
+        </button>
+        <button class="meal-btn" onclick="selectMeal('dinner', this)">
+          <span class="meal-emoji">🌙</span><span class="meal-label">Dinner</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Voice Input -->
+    <div class="section-card hidden" id="voice-input-section">
+      <h2 class="section-title">Tell us what you have</h2>
+      <p class="section-sub">Speak naturally or type your ingredients — we'll figure out the rest</p>
+
+      <div class="voice-hub">
+        <!-- Mic -->
+        <div class="mic-orb-wrap">
+          <div class="mic-orb" id="mic-orb" onclick="toggleMic()">🎙️</div>
+          <div class="waveform" id="waveform">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+          <span class="mic-status" id="mic-status">Tap microphone to speak</span>
+        </div>
+
+        <div class="or-divider">OR TYPE BELOW</div>
+
+        <textarea class="voice-textarea" id="voice-text"
+          placeholder="e.g. 'I have tomatoes, onions, paneer and spinach' or 'I want to make poha' or 'Suggest something with potatoes and eggs'..."></textarea>
+
+        <!-- Example phrases -->
+        <div>
+          <p style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;">💡 Try saying:</p>
+          <div class="example-chips">
+            <span class="example-chip" onclick="fillExample(this.textContent)">I have tomatoes, onions and paneer</span>
+            <span class="example-chip" onclick="fillExample(this.textContent)">I want to make poha</span>
+            <span class="example-chip" onclick="fillExample(this.textContent)">Something with rice and vegetables</span>
+            <span class="example-chip" onclick="fillExample(this.textContent)">I have aloo, pyaz and dhaniya</span>
+            <span class="example-chip" onclick="fillExample(this.textContent)">Quick breakfast with eggs</span>
+          </div>
+        </div>
+
+        <button class="parse-btn" onclick="parseInput()">🔍 Parse & Find Recipes</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Parsed Ingredients -->
+    <div class="section-card hidden" id="parsed-section">
+      <h2 class="section-title" style="margin-bottom:8px;">Understood! 🎯</h2>
+      <p class="section-sub">Our NER model extracted these from your input</p>
+
+      <div class="loading-overlay" id="parse-loading">
+        <div class="spinner"></div>
+        <div style="font-size:0.88rem;color:var(--muted);">
+          <strong style="color:var(--text);">Parsing your input...</strong><br>
+          Running through Named Entity Recognition model
+        </div>
+      </div>
+
+      <div class="parsed-panel" id="parsed-panel">
+        <div class="parsed-header">
+          <div class="parsed-badge">✅ Ingredients detected by NER model</div>
+          <span style="font-size:0.78rem;color:var(--muted);" id="parse-confidence"></span>
+        </div>
+
+        <div id="parsed-chips" class="ingredient-chips"></div>
+
+        <div id="dish-intent-row" class="hidden">
+          <div
+            style="padding:12px 18px;background:rgba(96,165,250,0.07);border:1px solid rgba(96,165,250,0.2);border-radius:12px;font-size:0.88rem;">
+            🍽️ Dish intent detected: <strong id="dish-intent-text" style="color:var(--blue);"></strong>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div>
+          <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:12px;">Dietary Preferences (optional)</h3>
+          <div class="filter-chips">
+            <span class="filter-chip" onclick="toggleFilter(this,'low-fat')">💧 Low Fat</span>
+            <span class="filter-chip" onclick="toggleFilter(this,'high-protein')">💪 High Protein</span>
+            <span class="filter-chip" onclick="toggleFilter(this,'vitamin-c-rich')">🍊 Vitamin C Rich</span>
+            <span class="filter-chip" onclick="toggleFilter(this,'calcium-rich')">🥛 Calcium Rich</span>
+            <span class="filter-chip" onclick="toggleFilter(this,'iron-rich')">🩸 Iron Rich</span>
+            <span class="filter-chip" onclick="toggleFilter(this,'vegan')">🌱 Vegan</span>
+            <span class="filter-chip" onclick="toggleFilter(this,'vegetarian')">🥬 Vegetarian</span>
+            <span class="filter-chip" onclick="toggleFilter(this,'low-calorie')">🥗 Low Calorie</span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;">
+          <button class="primary-btn" onclick="findRecipes()">Find Recipes →</button>
+          <button
+            style="padding:14px 20px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;"
+            onclick="retryInput()">← Edit Input</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Recipe Suggestions -->
+    <div class="section-card hidden" id="recipes-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div>
+          <h2 class="section-title" style="margin-bottom:4px;">Suggested Recipes</h2>
+          <p id="recipe-count-sub" style="font-size:0.85rem;color:var(--muted);">Matched to your ingredients</p>
+        </div>
+      </div>
+
+      <div class="loading-overlay" id="recipe-loading">
+        <div class="spinner"></div>
+        <div style="font-size:0.88rem;color:var(--muted);">
+          <strong style="color:var(--text);">Matching recipes...</strong><br>
+          Searching our database of 50,000+ recipes
+        </div>
+      </div>
+
+      <div class="recipes-grid" id="recipes-grid"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Config ──
+    const API_BASE = 'https://your-backend.onrender.com';
+
+    let selectedMeal = null;
+    let parsedIngredients = [];
+    let selectedIngredients = [];
+    let activeFilters = [];
+    let recognition = null;
+    let isListening = false;
+
+    // ── Meal ──
+    function selectMeal(meal, btn) {
+      document.querySelectorAll('.meal-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedMeal = meal;
+      setTimeout(() => {
+        document.getElementById('voice-input-section').classList.remove('hidden');
+        document.getElementById('voice-input-section').scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+
+    // ── Examples ──
+    function fillExample(text) {
+      document.getElementById('voice-text').value = text;
+      document.getElementById('voice-text').focus();
+    }
+
+    // ── Mic ──
+    function toggleMic() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Speech recognition is not supported in this browser. Please use Chrome.');
+        return;
+      }
+
+      if (isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
+    }
+
+    function startListening() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-IN';
+
+      recognition.onstart = () => {
+        isListening = true;
+        document.getElementById('mic-orb').classList.add('listening');
+        document.getElementById('waveform').classList.add('active');
+        document.getElementById('mic-status').textContent = 'Listening... speak now';
+        document.getElementById('mic-status').classList.add('listening');
+      };
+
+      recognition.onresult = (e) => {
+        let transcript = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          transcript += e.results[i][0].transcript;
+        }
+        document.getElementById('voice-text').value = transcript;
+      };
+
+      recognition.onend = () => stopListening();
+      recognition.onerror = () => stopListening();
+
+      recognition.start();
+    }
+
+    function stopListening() {
+      isListening = false;
+      if (recognition) recognition.stop();
+      document.getElementById('mic-orb').classList.remove('listening');
+      document.getElementById('waveform').classList.remove('active');
+      document.getElementById('mic-status').textContent = 'Tap microphone to speak';
+      document.getElementById('mic-status').classList.remove('listening');
+    }
+
+    // ── Parse ──
+    async function parseInput() {
+      const text = document.getElementById('voice-text').value.trim();
+      if (!text) { alert('Please enter or speak your ingredients.'); return; }
+
+      document.getElementById('parsed-section').classList.remove('hidden');
+      document.getElementById('parse-loading').classList.add('show');
+      document.getElementById('parsed-panel').classList.remove('show');
+      document.getElementById('parsed-section').scrollIntoView({ behavior: 'smooth' });
+
+      try {
+        const res = await fetch(API_BASE + '/api/parse-voice-input', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, meal_type: selectedMeal })
+        });
+        const data = await res.json();
+        document.getElementById('parse-loading').classList.remove('show');
+
+        if (data.success) {
+          parsedIngredients = data.extracted_ingredients || [];
+          selectedIngredients = [...parsedIngredients];
+
+          renderParsedChips(parsedIngredients);
+
+          if (data.dish_intent) {
+            document.getElementById('dish-intent-row').classList.remove('hidden');
+            document.getElementById('dish-intent-text').textContent = data.dish_intent;
+          }
+
+          const conf = Math.round((data.confidence || 0.95) * 100);
+          document.getElementById('parse-confidence').textContent = `Confidence: ${conf}%`;
+          document.getElementById('parsed-panel').classList.add('show');
+        } else {
+          alert('Parsing failed. Please try again.');
+        }
+      } catch (e) {
+        document.getElementById('parse-loading').classList.remove('show');
+        alert('Server connection error.');
+      }
+    }
+
+    function renderParsedChips(ingredients) {
+      const container = document.getElementById('parsed-chips');
+      container.innerHTML = '';
+      ingredients.forEach(ing => {
+        const chip = document.createElement('div');
+        chip.className = 'chip active';
+        chip.dataset.ingredient = ing;
+        chip.innerHTML = `<span>${capitalize(ing)}</span><button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;" onclick="toggleChip(this.parentElement)">×</button>`;
+        container.appendChild(chip);
+      });
+    }
+
+    function toggleChip(chip) {
+      chip.classList.toggle('active');
+      const ing = chip.dataset.ingredient;
+      if (chip.classList.contains('active')) {
+        if (!selectedIngredients.includes(ing)) selectedIngredients.push(ing);
+      } else {
+        selectedIngredients = selectedIngredients.filter(i => i !== ing);
+      }
+    }
+
+    function toggleFilter(el, filter) {
+      el.classList.toggle('active');
+      if (el.classList.contains('active')) {
+        if (!activeFilters.includes(filter)) activeFilters.push(filter);
+      } else {
+        activeFilters = activeFilters.filter(f => f !== filter);
+      }
+    }
+
+    function retryInput() {
+      document.getElementById('parsed-section').classList.add('hidden');
+      document.getElementById('voice-text').focus();
+    }
+
+    // ── Recipes ──
+    async function findRecipes() {
+      if (selectedIngredients.length === 0) { alert('Please keep at least one ingredient.'); return; }
+
+      document.getElementById('recipes-section').classList.remove('hidden');
+      document.getElementById('recipe-loading').classList.add('show');
+      document.getElementById('recipes-grid').innerHTML = '';
+      document.getElementById('recipes-section').scrollIntoView({ behavior: 'smooth' });
+
+      try {
+        const res = await fetch(API_BASE + '/api/suggest-recipes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ingredients: selectedIngredients,
+            meal_type: selectedMeal,
+            filters: activeFilters
+          })
+        });
+        const data = await res.json();
+
+        document.getElementById('recipe-loading').classList.remove('show');
+
+        if (data.success && data.recipes.length > 0) {
+          document.getElementById('recipe-count-sub').textContent =
+            `Found ${data.recipes.length} recipes · ${selectedIngredients.length} ingredients · ${selectedMeal}`;
+          renderRecipes(data.recipes);
+        } else {
+          document.getElementById('recipes-grid').innerHTML = '<p style="color:var(--muted);">No recipes found. Try relaxing your filters.</p>';
+        }
+      } catch (e) {
+        document.getElementById('recipe-loading').classList.remove('show');
+        document.getElementById('recipes-grid').innerHTML = '<p style="color:#f87171;">Server error.</p>';
+      }
+    }
+
+    function renderRecipes(recipes) {
+      const grid = document.getElementById('recipes-grid');
+      grid.innerHTML = '';
+      recipes.forEach(recipe => {
+        const score = Math.round((recipe.match_score || 0.9) * 100);
+        const card = document.createElement('div');
+        card.className = 'recipe-card';
+        card.innerHTML = `
+        <span class="match-score">✓ ${score}%</span>
+        <span class="recipe-emoji">${recipe.image_emoji || '🍽️'}</span>
+        <div class="recipe-name">${recipe.name}</div>
+        <div class="recipe-desc">${recipe.description || ''}</div>
+        <div class="recipe-meta">
+          <span class="meta-tag">⏱ ${recipe.cook_time || '30 mins'}</span>
+          <span class="meta-tag">${recipe.difficulty || 'Medium'}</span>
+          <span class="meta-tag">🔥 ${recipe.calories || '320'} cal</span>
+        </div>
+      `;
+        card.onclick = () => openRecipe(recipe);
+        grid.appendChild(card);
+      });
+    }
+
+    function openRecipe(recipe) {
+      sessionStorage.setItem('rl_recipe', JSON.stringify(recipe));
+      sessionStorage.setItem('rl_ingredients', JSON.stringify(selectedIngredients));
+      sessionStorage.setItem('rl_meal_type', selectedMeal || 'lunch');
+      console.log('Stored to sessionStorage:', recipe.name);
+      window.location.href = 'recipe.html';
+    } function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+  </script>
+</body>
+
+</html>

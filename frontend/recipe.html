@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe — Recipe Lens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: #16161f;
+      --card2: #1c1c27;
+      --card3: #21212e;
+      --border: rgba(255, 255, 255, 0.07);
+      --gold: #f5c842;
+      --orange: #fb923c;
+      --green: #4ade80;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --red: #f87171;
+      --text: #f0ede8;
+      --muted: #8a8799;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 20% 0%, rgba(245, 200, 66, 0.05) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 30% at 80% 100%, rgba(74, 222, 128, 0.03) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(10, 10, 15, 0.92);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+
+    .back-btn:hover {
+      color: var(--text);
+    }
+
+    .nav-recipe-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 300px;
+    }
+
+    .nav-right {
+      margin-left: auto;
+    }
+
+    .nav-tag {
+      background: rgba(245, 200, 66, 0.08);
+      border: 1px solid rgba(245, 200, 66, 0.2);
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* MAIN */
+    .main {
+      position: relative;
+      z-index: 1;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 36px 32px;
+    }
+
+    /* LOADING */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+      gap: 20px;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 52px;
+      height: 52px;
+      border: 3px solid rgba(245, 200, 66, 0.12);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .loading-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      opacity: 0;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .loading-step:nth-child(1) {
+      animation-delay: 0.4s
+    }
+
+    .loading-step:nth-child(2) {
+      animation-delay: 1s
+    }
+
+    .loading-step:nth-child(3) {
+      animation-delay: 1.6s
+    }
+
+    .ls-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* RECIPE DETAIL */
+    .recipe-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* HERO */
+    .recipe-hero {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 48px;
+      align-items: start;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .recipe-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--orange), var(--green));
+    }
+
+    .recipe-category {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245, 200, 66, 0.08);
+      border: 1px solid rgba(245, 200, 66, 0.2);
+      color: var(--gold);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .recipe-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+
+    .recipe-description {
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 28px;
+      font-size: 0.93rem;
+      max-width: 580px;
+    }
+
+    .quick-stats {
+      display: flex;
+      gap: 0;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .qs-item {
+      flex: 1;
+      padding: 16px 20px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .qs-item:last-child {
+      border-right: none;
+    }
+
+    .qs-item:hover {
+      background: var(--card3);
+    }
+
+    .qs-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      display: block;
+    }
+
+    .qs-lbl {
+      font-size: 0.67rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 3px;
+    }
+
+    .hero-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .big-emoji {
+      font-size: 5.5rem;
+      line-height: 1;
+      filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.5));
+      animation: float 4s ease-in-out infinite;
+      text-align: center;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(-2deg)
+      }
+
+      50% {
+        transform: translateY(-12px) rotate(2deg)
+      }
+    }
+
+    .servings-box {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .serv-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .serv-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .serv-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+
+    .serv-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .serv-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .cook-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      border: none;
+      border-radius: 14px;
+      color: #0a0a0f;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.25s;
+      letter-spacing: 0.02em;
+    }
+
+    .cook-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(245, 200, 66, 0.3);
+    }
+
+    /* BODY GRID */
+    .body-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .body-left {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .body-right {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* SECTION CARD */
+    .sc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+    }
+
+    .sc-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* STEPS LIST */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 20px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .step-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .step-item:first-child {
+      padding-top: 0;
+    }
+
+    .step-num-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(245, 200, 66, 0.15), rgba(251, 146, 60, 0.15));
+      border: 1.5px solid rgba(245, 200, 66, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .step-line {
+      width: 1.5px;
+      flex: 1;
+      min-height: 20px;
+      background: linear-gradient(to bottom, rgba(245, 200, 66, 0.2), transparent);
+      margin-top: 6px;
+    }
+
+    .step-item:last-child .step-line {
+      display: none;
+    }
+
+    .step-content {
+      flex: 1;
+      padding-top: 6px;
+    }
+
+    .step-content-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .step-content-desc {
+      font-size: 0.88rem;
+      color: rgba(240, 237, 232, 0.75);
+      line-height: 1.75;
+      margin-bottom: 10px;
+    }
+
+    .step-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .step-dur {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .step-tip-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(96, 165, 250, 0.07);
+      border: 1px solid rgba(96, 165, 250, 0.2);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      color: var(--blue);
+    }
+
+    /* INGREDIENTS */
+    .ing-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ing-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .ing-row:hover {
+      border-color: rgba(245, 200, 66, 0.2);
+    }
+
+    .ing-row.checked {
+      background: rgba(74, 222, 128, 0.05);
+      border-color: rgba(74, 222, 128, 0.2);
+    }
+
+    .ing-row-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ing-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .ing-row.checked .ing-check {
+      background: var(--green);
+      border-color: var(--green);
+      color: #0a0a0f;
+    }
+
+    .ing-n {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .ing-row.checked .ing-n {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .ing-q {
+      font-size: 0.82rem;
+      color: var(--gold);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* NUTRITION */
+    .nutr-main {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .nutr-big {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .nutr-big-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .nutr-big-lbl {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .nutr-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nutr-bar-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .nutr-bar-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+    }
+
+    .nutr-bar-name {
+      color: var(--muted);
+    }
+
+    .nutr-bar-val {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .nutr-bar-track {
+      height: 5px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .nutr-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 1s ease;
+    }
+
+    .nutr-minor {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .nutr-minor-item {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .nm-val {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .nm-lbl {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* TIPS */
+    .tips-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tip-item {
+      display: flex;
+      gap: 12px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      align-items: flex-start;
+    }
+
+    .tip-num {
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 0.82rem;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    .tip-text {
+      font-size: 0.85rem;
+      line-height: 1.65;
+      color: rgba(240, 237, 232, 0.8);
+    }
+
+    /* TAGS */
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ══ COOKING MODE ══ */
+    .cooking-mode {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 300;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .cooking-mode.show {
+      display: flex;
+    }
+
+    .cook-nav {
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(24px);
+      flex-shrink: 0;
+      gap: 16px;
+    }
+
+    .cook-recipe-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .cook-progress-wrap {
+      flex: 1;
+      max-width: 300px;
+    }
+
+    .cook-prog-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .cook-prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--orange));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .cook-prog-text {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .exit-btn {
+      background: rgba(248, 113, 113, 0.08);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      color: var(--red);
+      padding: 8px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .exit-btn:hover {
+      background: rgba(248, 113, 113, 0.16);
+    }
+
+    /* Cook body two-column */
+    .cook-body {
+      flex: 1;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+    }
+
+    /* Left: step */
+    .cook-left {
+      padding: 32px 36px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      border-right: 1px solid var(--border);
+    }
+
+    .step-header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 200, 66, 0.1);
+      border: 1px solid rgba(245, 200, 66, 0.25);
+      color: var(--gold);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+
+    .step-time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.78rem;
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    .step-main-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .step-main-desc {
+      font-size: 1.05rem;
+      line-height: 1.85;
+      color: rgba(240, 237, 232, 0.88);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .step-tip-box {
+      background: rgba(96, 165, 250, 0.06);
+      border: 1px solid rgba(96, 165, 250, 0.2);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .tip-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    .tip-body {
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: var(--blue);
+    }
+
+    .tip-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+      opacity: 0.7;
+    }
+
+    /* Timer */
+    .timer-box {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .timer-display {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      min-width: 80px;
+    }
+
+    .timer-display.running {
+      color: var(--green);
+    }
+
+    .timer-display.done {
+      color: var(--red);
+      animation: tdone 0.5s ease infinite alternate;
+    }
+
+    @keyframes tdone {
+      from {
+        opacity: 1
+      }
+
+      to {
+        opacity: 0.4
+      }
+    }
+
+    .timer-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .timer-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .timer-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+      border: 1px solid var(--border);
+      background: var(--card3);
+      color: var(--text);
+    }
+
+    .timer-btn.start {
+      border-color: rgba(74, 222, 128, 0.3);
+      color: var(--green);
+      background: rgba(74, 222, 128, 0.07);
+    }
+
+    .timer-btn.start:hover {
+      background: rgba(74, 222, 128, 0.14);
+    }
+
+    .timer-btn.reset {
+      color: var(--muted);
+    }
+
+    .timer-btn.reset:hover {
+      color: var(--text);
+    }
+
+    /* Step nav */
+    .step-nav-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .snav-btn {
+      padding: 14px 28px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.25s;
+      border: 1px solid var(--border);
+      background: var(--card2);
+      color: var(--text);
+    }
+
+    .snav-btn:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .snav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .snav-btn.primary {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      border-color: transparent;
+      color: #0a0a0f;
+      flex: 1;
+    }
+
+    .snav-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(245, 200, 66, 0.25);
+    }
+
+    /* Cook right */
+    .cook-right {
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: rgba(12, 12, 18, 0.6);
+    }
+
+    .cr-section-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+    }
+
+    /* Voice panel */
+    .voice-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .voice-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .voice-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .voice-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .mic-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(245, 200, 66, 0.12), rgba(251, 146, 60, 0.12));
+      border: 1.5px solid rgba(245, 200, 66, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .mic-btn:hover {
+      border-color: var(--gold);
+      transform: scale(1.06);
+    }
+
+    .mic-btn.listening {
+      background: rgba(245, 200, 66, 0.2);
+      border-color: var(--gold);
+      animation: micPulse 1s infinite;
+    }
+
+    @keyframes micPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(245, 200, 66, 0.3)
+      }
+
+      50% {
+        box-shadow: 0 0 0 12px rgba(245, 200, 66, 0)
+      }
+    }
+
+    .cmd-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .cmd-pill {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .cmd-pill:hover {
+      background: var(--card3);
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .voice-status {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+      min-height: 40px;
+      line-height: 1.5;
+    }
+
+    /* Mini steps */
+    .mini-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mini-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mini-step:hover {
+      background: var(--card);
+    }
+
+    .mini-step.active {
+      background: rgba(245, 200, 66, 0.06);
+      border-color: rgba(245, 200, 66, 0.2);
+    }
+
+    .mini-step.done-step {
+      opacity: 0.45;
+    }
+
+    .ms-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      margin-top: 1px;
+    }
+
+    .mini-step.active .ms-num {
+      background: var(--gold);
+      color: #0a0a0f;
+      border-color: var(--gold);
+    }
+
+    .mini-step.done-step .ms-num {
+      background: var(--green);
+      color: #0a0a0f;
+      border-color: var(--green);
+    }
+
+    .ms-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .ms-dur {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Complete */
+    .cook-complete {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex: 1;
+      padding: 60px 32px;
+      gap: 20px;
+    }
+
+    .cook-complete.show {
+      display: flex;
+    }
+
+    .complete-emoji {
+      font-size: 5rem;
+      animation: bounce 0.6s ease infinite alternate;
+    }
+
+    @keyframes bounce {
+      from {
+        transform: translateY(0)
+      }
+
+      to {
+        transform: translateY(-16px)
+      }
+    }
+
+    .complete-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      font-weight: 900;
+    }
+
+    .complete-sub {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .complete-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .ca-btn {
+      padding: 14px 28px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .ca-btn.primary {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      border: none;
+      color: #0a0a0f;
+    }
+
+    .ca-btn.secondary {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .ca-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width:900px) {
+      .recipe-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .body-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cook-body {
+        grid-template-columns: 1fr;
+      }
+
+      .cook-right {
+        border-top: 1px solid var(--border);
+        max-height: 300px;
+      }
+
+      .main {
+        padding: 24px 16px;
+      }
+
+      .cook-left {
+        padding: 24px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a href="javascript:history.back()" class="back-btn">← Back</a>
+    <span class="nav-recipe-name" id="nav-recipe-name">Loading...</span>
+    <div class="nav-right"><span class="nav-tag" id="nav-tag">Recipe</span></div>
+  </nav>
+
+  <div class="main">
+
+    <div class="loading-state" id="loading-state">
+      <div class="spinner"></div>
+      <div>
+        <strong style="font-family:'Playfair Display',serif;font-size:1.3rem;">Preparing Your Recipe</strong>
+        <div class="loading-steps">
+          <div class="loading-step"><span class="ls-dot"></span>Fetching recipe details...</div>
+          <div class="loading-step"><span class="ls-dot"></span>Calculating nutritional values...</div>
+          <div class="loading-step"><span class="ls-dot"></span>Generating step-by-step guide...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="recipe-detail hidden" id="recipe-detail">
+
+      <!-- HERO -->
+      <div class="recipe-hero">
+        <div>
+          <div class="recipe-category" id="recipe-category">🍽️ Indian · Lunch</div>
+          <h1 class="recipe-title" id="recipe-title">Recipe</h1>
+          <p class="recipe-description" id="recipe-desc"></p>
+          <div class="quick-stats">
+            <div class="qs-item"><span class="qs-val" id="qs-prep">—</span><span class="qs-lbl">Prep</span></div>
+            <div class="qs-item"><span class="qs-val" id="qs-cook">—</span><span class="qs-lbl">Cook</span></div>
+            <div class="qs-item"><span class="qs-val" id="qs-cal">—</span><span class="qs-lbl">Calories</span></div>
+            <div class="qs-item"><span class="qs-val" id="qs-diff">—</span><span class="qs-lbl">Difficulty</span></div>
+            <div class="qs-item"><span class="qs-val" id="qs-steps">—</span><span class="qs-lbl">Steps</span></div>
+          </div>
+        </div>
+        <div class="hero-right">
+          <div class="big-emoji" id="big-emoji">🍽️</div>
+          <div class="servings-box">
+            <span class="serv-label">Servings</span>
+            <div class="serv-row">
+              <button class="serv-btn" onclick="adjustServings(-1)">−</button>
+              <span class="serv-num" id="serv-num">2</span>
+              <button class="serv-btn" onclick="adjustServings(1)">+</button>
+            </div>
+          </div>
+          <button class="cook-btn" onclick="startCooking()">👨‍🍳 Let's Cook!</button>
+        </div>
+      </div>
+
+      <!-- BODY GRID -->
+      <div class="body-grid">
+        <div class="body-left">
+
+          <!-- Steps -->
+          <div class="sc">
+            <div class="sc-title">📋 Step-by-Step Instructions</div>
+            <div class="steps-list" id="steps-list"></div>
+          </div>
+
+          <!-- Nutrition -->
+          <div class="sc">
+            <div class="sc-title">💊 Nutritional Breakdown <span
+                style="font-size:0.72rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;">(per
+                serving)</span></div>
+            <div class="nutr-main" id="nutr-main"></div>
+            <div class="nutr-bars" id="nutr-bars"></div>
+            <div class="nutr-minor" id="nutr-minor"></div>
+          </div>
+
+        </div>
+        <div class="body-right">
+
+          <!-- Ingredients checklist -->
+          <div class="sc">
+            <div class="sc-title">🧺 Ingredients
+              <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;"
+                id="serv-note">(2 servings)</span>
+            </div>
+            <div class="ing-list" id="ing-list"></div>
+          </div>
+
+          <!-- Tags -->
+          <div class="sc" id="tags-card" style="padding:20px 24px;">
+            <div class="sc-title" style="margin-bottom:12px;">🏷️ Tags</div>
+            <div class="tag-row" id="tags-row"></div>
+          </div>
+
+          <!-- Tips -->
+          <div class="sc">
+            <div class="sc-title">💡 Chef's Tips</div>
+            <div class="tips-list" id="tips-list"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ COOKING MODE ══ -->
+  <div class="cooking-mode" id="cooking-mode">
+
+    <div class="cook-nav">
+      <span class="cook-recipe-name" id="cook-recipe-name">Cooking</span>
+      <div class="cook-progress-wrap">
+        <div class="cook-prog-bar">
+          <div class="cook-prog-fill" id="cook-prog-fill" style="width:0%"></div>
+        </div>
+        <div class="cook-prog-text" id="cook-prog-text">Step 1 of 1</div>
+      </div>
+      <button class="exit-btn" onclick="exitCooking()">✕ Exit</button>
+    </div>
+
+    <div class="cook-body" id="cook-body-grid">
+
+      <!-- LEFT: active step -->
+      <div class="cook-left" id="cook-left">
+        <div class="step-header">
+          <div class="step-badge-row">
+            <div class="step-badge" id="ck-step-badge">Step 1</div>
+            <div class="step-time-badge" id="ck-step-dur">⏱ 5 mins</div>
+          </div>
+          <h2 class="step-main-title" id="ck-step-title">Step Title</h2>
+        </div>
+
+        <div class="step-main-desc" id="ck-step-desc">Step description here.</div>
+
+        <div class="step-tip-box hidden" id="ck-tip-box">
+          <span class="tip-icon">💡</span>
+          <div class="tip-body">
+            <div class="tip-label">Pro Tip</div>
+            <span id="ck-tip-text"></span>
+          </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-box">
+          <div>
+            <div class="timer-display" id="timer-display">00:00</div>
+            <div class="timer-label" id="timer-label">Step Timer</div>
+          </div>
+          <div class="timer-btns">
+            <button class="timer-btn start" id="timer-start-btn" onclick="timerToggle()">▶ Start</button>
+            <button class="timer-btn reset" onclick="timerReset()">↺ Reset</button>
+          </div>
+        </div>
+
+        <!-- Nav -->
+        <div class="step-nav-row">
+          <button class="snav-btn" onclick="handleCommand('back')" id="btn-back">← Back</button>
+          <button class="snav-btn primary" onclick="handleCommand('next')" id="btn-next">Next Step →</button>
+        </div>
+      </div>
+
+      <!-- RIGHT panel -->
+      <div class="cook-right">
+        <div>
+          <div class="cr-section-title">Voice Assistant</div>
+          <div class="voice-panel">
+            <div class="voice-top">
+              <div>
+                <div class="voice-title">🎙️ Hands-Free Mode</div>
+                <div class="voice-sub">Speak commands while cooking</div>
+              </div>
+              <button class="mic-btn" id="mic-btn" onclick="toggleVoice()">🎙️</button>
+            </div>
+            <div class="cmd-pills">
+              <button class="cmd-pill" onclick="handleCommand('next')">▶ Next</button>
+              <button class="cmd-pill" onclick="handleCommand('back')">◀ Back</button>
+              <button class="cmd-pill" onclick="handleCommand('repeat')">↩ Repeat</button>
+              <button class="cmd-pill" onclick="handleCommand('tip')">💡 Tip</button>
+              <button class="cmd-pill" onclick="timerToggle()">⏱ Timer</button>
+              <button class="cmd-pill" onclick="handleCommand('stop')">■ Stop</button>
+            </div>
+            <div class="voice-status" id="voice-status">Say "next", "back", "tip", "repeat", "timer", or "stop"</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="cr-section-title">All Steps</div>
+          <div class="mini-steps" id="mini-steps"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Complete -->
+    <div class="cook-complete" id="cook-complete">
+      <div class="complete-emoji">🎉</div>
+      <h2 class="complete-title">Recipe Complete!</h2>
+      <p class="complete-sub" id="complete-sub">Your dish is ready. Bon appétit!</p>
+      <div class="complete-actions">
+        <a href="index.html" class="ca-btn primary">🏠 Home</a>
+        <button class="ca-btn secondary" onclick="exitCooking()">Cook Again</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── Config ──
+    const API_BASE = 'https://your-backend.onrender.com';
+
+    let recipeBase = null, recipeDetail = null, ingredients = [], mealType = 'lunch';
+    let currentServings = 2, baseServings = 2, currentStep = 0;
+    let voiceRec = null, isVoiceOn = false;
+    let timerInterval = null, timerSeconds = 0, timerRunning = false, timerTarget = 0;
+    const synth = window.speechSynthesis;
+
+    window.onload = async () => {
+      try {
+        const rr = sessionStorage.getItem('rl_recipe');
+        const ri = sessionStorage.getItem('rl_ingredients');
+        const rm = sessionStorage.getItem('rl_meal_type');
+        if (!rr) { showNoRecipe(); return; }
+        recipeBase = JSON.parse(rr);
+        ingredients = ri ? JSON.parse(ri) : [];
+        mealType = rm || 'lunch';
+      } catch (e) { recipeBase = {}; ingredients = []; mealType = 'lunch'; }
+      document.getElementById('nav-recipe-name').textContent = recipeBase.name || 'Recipe';
+      document.getElementById('nav-tag').textContent = capitalize(mealType);
+      await loadDetail();
+    };
+
+    function showNoRecipe() {
+      document.getElementById('loading-state').innerHTML = `
+      <span style="font-size:3rem">⚠️</span>
+      <p style="color:var(--muted);margin-top:12px;">No recipe selected. Go back and pick a dish.</p>
+      <button onclick="history.back()" style="margin-top:16px;padding:12px 24px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;">← Go Back</button>`;
+    }
+
+    async function loadDetail() {
+      try {
+        const res = await fetch(API_BASE + '/api/recipe-detail', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipe_name: recipeBase.name, ingredients, servings: currentServings, meal_type: mealType })
+        });
+        const data = await res.json();
+        if (data.success && data.recipe) {
+          recipeDetail = data.recipe;
+          baseServings = recipeDetail.servings || 2;
+          currentServings = baseServings;
+          renderAll();
+        } else { showError(); }
+      } catch (e) { console.error(e); showError(); }
+    }
+
+    function showError() {
+      document.getElementById('loading-state').innerHTML = `
+      <span style="font-size:3rem">⚠️</span>
+      <p style="color:var(--muted);margin-top:12px;">Failed to load. Please go back and try again.</p>
+      <button onclick="history.back()" style="margin-top:16px;padding:12px 24px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;">← Go Back</button>`;
+    }
+
+    function renderAll() {
+      const r = recipeDetail;
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('recipe-detail').classList.remove('hidden');
+      document.getElementById('recipe-category').textContent = `${r.image_emoji || '🍽️'} ${r.cuisine || 'Indian'} · ${capitalize(mealType)}`;
+      document.getElementById('recipe-title').textContent = r.name;
+      document.getElementById('big-emoji').textContent = r.image_emoji || '🍽️';
+      document.getElementById('recipe-desc').textContent = r.description || '';
+      document.getElementById('qs-prep').textContent = r.prep_time || '10 mins';
+      document.getElementById('qs-cook').textContent = r.cook_time || '30 mins';
+      document.getElementById('qs-cal').textContent = (r.calories_per_serving || r.nutrition?.calories || '—') + ' cal';
+      document.getElementById('qs-diff').textContent = r.difficulty || 'Medium';
+      document.getElementById('qs-steps').textContent = (r.steps || []).length;
+      document.getElementById('serv-num').textContent = currentServings;
+      renderStepsList();
+      renderIngredients();
+      renderNutrition(r.nutrition || {});
+      renderTips(r.tips || []);
+      renderTags(r.tags || []);
+    }
+
+    function renderStepsList() {
+      const steps = recipeDetail.steps || [];
+      const c = document.getElementById('steps-list');
+      c.innerHTML = '';
+      steps.forEach((s, i) => {
+        const d = document.createElement('div');
+        d.className = 'step-item';
+        d.innerHTML = `
+        <div class="step-num-col">
+          <div class="step-circle">${i + 1}</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-content-title">${s.title || ''}</div>
+          <div class="step-content-desc">${s.description || ''}</div>
+          <div class="step-meta">
+            ${s.duration ? `<span class="step-dur">⏱ ${s.duration}</span>` : ''}
+            ${s.tip ? `<span class="step-tip-badge">💡 ${s.tip}</span>` : ''}
+          </div>
+        </div>`;
+        c.appendChild(d);
+      });
+    }
+
+    function renderIngredients() {
+      const ings = recipeDetail.ingredients || [];
+      const ratio = currentServings / baseServings;
+      const c = document.getElementById('ing-list');
+      c.innerHTML = '';
+      document.getElementById('serv-note').textContent = `(${currentServings} servings)`;
+      ings.forEach(ing => {
+        const qty = ing.per_serving ? round2(ing.per_serving * currentServings) : round2((ing.quantity || 1) * ratio);
+        const row = document.createElement('div');
+        row.className = 'ing-row';
+        row.onclick = () => {
+          row.classList.toggle('checked');
+          row.querySelector('.ing-check').textContent = row.classList.contains('checked') ? '✓' : '';
+        };
+        row.innerHTML = `
+        <div class="ing-row-left">
+          <div class="ing-check"></div>
+          <span class="ing-n">${ing.name}</span>
+        </div>
+        <span class="ing-q">${qty} ${ing.unit || ''}</span>`;
+        c.appendChild(row);
+      });
+    }
+
+    function renderNutrition(n) {
+      const mainData = [
+        { label: 'Calories', val: n.calories || '—', color: '#f5c842' },
+        { label: 'Protein', val: n.protein || '—', color: '#4ade80' },
+        { label: 'Carbs', val: n.carbs || '—', color: '#60a5fa' },
+        { label: 'Fat', val: n.fat || '—', color: '#fb923c' },
+      ];
+      document.getElementById('nutr-main').innerHTML = mainData.map(m => `
+      <div class="nutr-big">
+        <div class="nutr-big-val" style="color:${m.color}">${m.val}</div>
+        <div class="nutr-big-lbl">${m.label}</div>
+      </div>`).join('');
+
+      const pg = v => parseFloat((v || '0').toString().replace(/[^\d.]/g, '')) || 0;
+      const barsData = [
+        { name: 'Protein', val: n.protein, color: '#4ade80', max: 50 },
+        { name: 'Carbs', val: n.carbs, color: '#60a5fa', max: 100 },
+        { name: 'Fat', val: n.fat, color: '#fb923c', max: 60 },
+        { name: 'Fiber', val: n.fiber, color: '#a78bfa', max: 30 },
+      ];
+      document.getElementById('nutr-bars').innerHTML = barsData.map(b => {
+        const pct = Math.min(100, (pg(b.val) / b.max) * 100);
+        return `<div class="nutr-bar-row">
+        <div class="nutr-bar-header"><span class="nutr-bar-name">${b.name}</span><span class="nutr-bar-val">${b.val || '—'}</span></div>
+        <div class="nutr-bar-track"><div class="nutr-bar-fill" style="width:${pct}%;background:${b.color}"></div></div>
+      </div>`;
+      }).join('');
+
+      const minors = [
+        { l: 'Vitamin C', v: n.vitamin_c }, { l: 'Calcium', v: n.calcium },
+        { l: 'Iron', v: n.iron }, { l: 'Vitamin A', v: n.vitamin_a },
+        { l: 'Potassium', v: n.potassium }, { l: 'Sodium', v: n.sodium || '—' },
+      ];
+      document.getElementById('nutr-minor').innerHTML = minors.map(m => `
+      <div class="nutr-minor-item"><div class="nm-val">${m.v || '—'}</div><div class="nm-lbl">${m.l}</div></div>`).join('');
+    }
+
+    function renderTips(tips) {
+      if (!tips.length) { document.getElementById('tips-list').innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">No tips available.</p>'; return; }
+      document.getElementById('tips-list').innerHTML = tips.map((t, i) => `
+      <div class="tip-item">
+        <span class="tip-num">0${i + 1}</span>
+        <span class="tip-text">${t}</span>
+      </div>`).join('');
+    }
+
+    function renderTags(tags) {
+      if (!tags.length) { document.getElementById('tags-card').classList.add('hidden'); return; }
+      document.getElementById('tags-row').innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
+    }
+
+    function adjustServings(d) {
+      const n = currentServings + d;
+      if (n < 1 || n > 20) return;
+      currentServings = n;
+      document.getElementById('serv-num').textContent = n;
+      renderIngredients();
+    }
+
+    // ══ COOKING MODE ══
+    function startCooking() {
+      currentStep = 0;
+      document.getElementById('cooking-mode').classList.add('show');
+      document.getElementById('cook-recipe-name').textContent = recipeDetail.name;
+      document.getElementById('complete-sub').textContent = `Your ${recipeDetail.name} is ready. Bon appétit!`;
+      renderMiniSteps();
+      renderCookStep(0);
+      speak(recipeDetail.voice_intro || `Let's cook ${recipeDetail.name}! I'll guide you through every step.`);
+    }
+
+    function exitCooking() {
+      document.getElementById('cooking-mode').classList.remove('show');
+      stopVoice(); synth.cancel(); timerReset();
+      document.getElementById('cook-complete').classList.remove('show');
+      document.getElementById('cook-body-grid').style.display = '';
+    }
+
+    function renderMiniSteps() {
+      const steps = recipeDetail.steps || [];
+      document.getElementById('mini-steps').innerHTML = steps.map((s, i) => `
+      <div class="mini-step ${i === 0 ? 'active' : ''}" id="ms-${i}" onclick="jumpToStep(${i})">
+        <div class="ms-num">${i + 1}</div>
+        <div>
+          <div class="ms-title">${s.title || 'Step ' + (i + 1)}</div>
+          ${s.duration ? `<div class="ms-dur">⏱ ${s.duration}</div>` : ''}
+        </div>
+      </div>`).join('');
+    }
+
+    function jumpToStep(idx) {
+      currentStep = idx; timerReset(); renderCookStep(idx);
+      speak(`Step ${idx + 1}. ${(recipeDetail.steps[idx] || {}).title || ''}`);
+    }
+
+    function renderCookStep(idx) {
+      const steps = recipeDetail.steps || [];
+      const total = steps.length;
+
+      if (idx >= total) {
+        document.getElementById('cook-body-grid').style.display = 'none';
+        document.getElementById('cook-complete').classList.add('show');
+        speak(`Congratulations! Your ${recipeDetail.name} is ready. Bon appétit!`);
+        return;
+      }
+
+      document.getElementById('cook-body-grid').style.display = '';
+      document.getElementById('cook-complete').classList.remove('show');
+
+      const s = steps[idx];
+      const pct = (idx / total) * 100;
+      document.getElementById('cook-prog-fill').style.width = pct + '%';
+      document.getElementById('cook-prog-text').textContent = `Step ${idx + 1} of ${total}`;
+      document.getElementById('ck-step-badge').textContent = `Step ${idx + 1} of ${total}`;
+      document.getElementById('ck-step-title').textContent = s.title || '';
+      document.getElementById('ck-step-desc').textContent = s.description || '';
+
+      if (s.duration) {
+        document.getElementById('ck-step-dur').textContent = '⏱ ' + s.duration;
+        document.getElementById('ck-step-dur').style.display = '';
+        const m = parseInt(s.duration); timerTarget = isNaN(m) ? 0 : m * 60;
+      } else {
+        document.getElementById('ck-step-dur').style.display = 'none'; timerTarget = 0;
+      }
+
+      const tb = document.getElementById('ck-tip-box');
+      if (s.tip) { document.getElementById('ck-tip-text').textContent = s.tip; tb.classList.remove('hidden'); }
+      else { tb.classList.add('hidden'); }
+
+      document.getElementById('btn-back').disabled = idx === 0;
+      document.getElementById('btn-next').textContent = idx === total - 1 ? '🎉 Finish!' : 'Next Step →';
+
+      document.querySelectorAll('.mini-step').forEach((el, i) => {
+        el.classList.remove('active', 'done-step');
+        if (i === idx) el.classList.add('active');
+        else if (i < idx) el.classList.add('done-step');
+      });
+
+      timerReset();
+      speak(`Step ${idx + 1}. ${s.title}. ${s.description}`);
+    }
+
+    function handleCommand(cmd) {
+      const steps = recipeDetail.steps || [];
+      const total = steps.length;
+      cmd = cmd.toLowerCase().trim();
+      if (cmd === 'next') { currentStep = Math.min(currentStep + 1, total); renderCookStep(currentStep); }
+      else if (cmd === 'back') { currentStep = Math.max(currentStep - 1, 0); renderCookStep(currentStep); }
+      else if (cmd === 'repeat') { speak(`Step ${currentStep + 1}. ${steps[currentStep]?.title || ''}. ${steps[currentStep]?.description || ''}`); }
+      else if (cmd === 'tip') { const t = steps[currentStep]?.tip; speak(t ? 'Pro tip: ' + t : 'No tip for this step.'); }
+      else if (cmd === 'timer') { timerToggle(); }
+      else if (cmd === 'stop' || cmd === 'exit') { exitCooking(); }
+    }
+
+    // ── TIMER ──
+    function timerToggle() {
+      if (timerRunning) {
+        clearInterval(timerInterval); timerRunning = false;
+        document.getElementById('timer-start-btn').textContent = '▶ Resume';
+        document.getElementById('timer-display').classList.remove('running');
+      } else {
+        timerRunning = true;
+        document.getElementById('timer-start-btn').textContent = '⏸ Pause';
+        document.getElementById('timer-display').classList.add('running');
+        document.getElementById('timer-display').classList.remove('done');
+        timerInterval = setInterval(() => {
+          timerSeconds++;
+          updateTimerDisplay();
+          if (timerTarget > 0 && timerSeconds >= timerTarget) {
+            clearInterval(timerInterval); timerRunning = false;
+            document.getElementById('timer-display').classList.remove('running');
+            document.getElementById('timer-display').classList.add('done');
+            document.getElementById('timer-start-btn').textContent = '▶ Start';
+            document.getElementById('timer-label').textContent = "✅ Time's up!";
+            speak("Time is up! Check your dish.");
+          }
+        }, 1000);
+      }
+    }
+
+    function timerReset() {
+      clearInterval(timerInterval); timerRunning = false; timerSeconds = 0;
+      document.getElementById('timer-display').textContent = '00:00';
+      document.getElementById('timer-display').className = 'timer-display';
+      document.getElementById('timer-start-btn').textContent = '▶ Start';
+      document.getElementById('timer-label').textContent = 'Step Timer';
+    }
+
+    function updateTimerDisplay() {
+      const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+      const s = (timerSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('timer-display').textContent = `${m}:${s}`;
+      if (timerTarget > 0) {
+        const rem = timerTarget - timerSeconds;
+        if (rem > 0) {
+          const rm = Math.floor(rem / 60).toString().padStart(2, '0');
+          const rs = (rem % 60).toString().padStart(2, '0');
+          document.getElementById('timer-label').textContent = `${rm}:${rs} remaining`;
+        }
+      }
+    }
+
+    // ── TTS ──
+    function speak(text) {
+      if (!synth) return;
+      synth.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.rate = 0.88; utt.pitch = 1.0; utt.lang = 'en-IN';
+      const voices = synth.getVoices();
+      const pref = voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female'))
+        || voices.find(v => v.lang === 'en-IN')
+        || voices.find(v => v.lang.startsWith('en'))
+        || voices[0];
+      if (pref) utt.voice = pref;
+      synth.speak(utt);
+    }
+
+    // ── VOICE ──
+    function toggleVoice() { isVoiceOn ? stopVoice() : startVoice(); }
+
+    function startVoice() {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        document.getElementById('voice-status').textContent = '⚠️ Not supported. Use Chrome.'; return;
+      }
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      voiceRec = new SR(); voiceRec.continuous = true; voiceRec.interimResults = false; voiceRec.lang = 'en-IN';
+      voiceRec.onresult = (e) => {
+        const t = e.results[e.results.length - 1][0].transcript.toLowerCase().trim();
+        document.getElementById('voice-status').textContent = `Heard: "${t}"`;
+        if (t.includes('next')) handleCommand('next');
+        else if (t.includes('back') || t.includes('previous')) handleCommand('back');
+        else if (t.includes('repeat') || t.includes('again')) handleCommand('repeat');
+        else if (t.includes('tip')) handleCommand('tip');
+        else if (t.includes('timer')) handleCommand('timer');
+        else if (t.includes('stop') || t.includes('exit')) handleCommand('stop');
+        else document.getElementById('voice-status').textContent = `"${t}" — try: next, back, tip, repeat, timer, stop`;
+      };
+      voiceRec.onerror = () => { };
+      voiceRec.onend = () => { if (isVoiceOn) voiceRec.start(); };
+      voiceRec.start();
+      isVoiceOn = true;
+      document.getElementById('mic-btn').classList.add('listening');
+      document.getElementById('voice-status').textContent = '🎙️ Listening… speak a command';
+    }
+
+    function stopVoice() {
+      if (voiceRec) { voiceRec.onend = null; voiceRec.stop(); voiceRec = null; }
+      isVoiceOn = false;
+      document.getElementById('mic-btn').classList.remove('listening');
+      document.getElementById('voice-status').textContent = 'Voice paused. Tap mic to resume.';
+    }
+
+    function round2(n) { if (n === Math.round(n)) return Math.round(n); return Math.round(n * 4) / 4; }
+    function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+  </script>
+</body>
+
+</html>
