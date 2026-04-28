@@ -1319,6 +1319,29 @@
     @media (max-width:900px) {
       .recipe-hero {
         grid-template-columns: 1fr;
+        padding: 28px 24px;
+        gap: 24px;
+      }
+
+      .hero-right {
+        flex-direction: row;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .big-emoji {
+        font-size: 3.5rem;
+      }
+
+      .servings-box {
+        width: auto;
+        min-width: 160px;
+      }
+
+      .cook-btn {
+        width: auto;
+        min-width: 160px;
       }
 
       .body-grid {
@@ -1340,6 +1363,312 @@
 
       .cook-left {
         padding: 24px 20px;
+      }
+
+      .quick-stats {
+        flex-wrap: wrap;
+      }
+
+      .qs-item {
+        flex: 1 1 30%;
+        min-width: 0;
+        padding: 12px 8px;
+      }
+
+      .qs-val {
+        font-size: 0.9rem;
+      }
+
+      .qs-lbl {
+        font-size: 0.6rem;
+      }
+
+      .recipe-title {
+        font-size: 1.6rem;
+      }
+
+      .recipe-description {
+        font-size: 0.85rem;
+      }
+
+      .sc {
+        padding: 20px 16px;
+        border-radius: 16px;
+      }
+
+      .sc-title {
+        font-size: 1rem;
+      }
+
+      .nutr-minor {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .step-main-title {
+        font-size: 1.4rem;
+      }
+
+      .step-main-desc {
+        font-size: 0.95rem;
+        padding: 18px;
+      }
+
+      .cook-nav {
+        padding: 12px 16px;
+        gap: 10px;
+      }
+
+      .cook-recipe-name {
+        font-size: 0.88rem;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .cook-progress-wrap {
+        max-width: 160px;
+      }
+
+      .timer-box {
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .timer-display {
+        font-size: 1.6rem;
+      }
+
+      .step-nav-row {
+        flex-wrap: wrap;
+      }
+
+      .snav-btn {
+        padding: 12px 20px;
+        font-size: 0.85rem;
+      }
+
+      .complete-title {
+        font-size: 1.8rem;
+      }
+
+      .complete-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 520px) {
+      nav {
+        padding: 10px 12px;
+        gap: 10px;
+      }
+
+      .nav-recipe-name {
+        max-width: 140px;
+        font-size: 0.88rem;
+      }
+
+      .nav-tag {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+      }
+
+      .recipe-hero {
+        padding: 20px 16px;
+        border-radius: 18px;
+      }
+
+      .recipe-category {
+        font-size: 0.68rem;
+        padding: 4px 10px;
+      }
+
+      .recipe-title {
+        font-size: 1.35rem;
+      }
+
+      .quick-stats {
+        border-radius: 12px;
+      }
+
+      .qs-item {
+        padding: 10px 6px;
+      }
+
+      .qs-val {
+        font-size: 0.82rem;
+      }
+
+      .qs-lbl {
+        font-size: 0.55rem;
+      }
+
+      .hero-right {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .servings-box {
+        width: 100%;
+      }
+
+      .cook-btn {
+        width: 100%;
+      }
+
+      .main {
+        padding: 16px 12px;
+      }
+
+      .sc {
+        padding: 16px 12px;
+        border-radius: 14px;
+      }
+
+      .step-item {
+        gap: 12px;
+      }
+
+      .step-circle {
+        width: 30px;
+        height: 30px;
+        font-size: 0.72rem;
+      }
+
+      .step-content-title {
+        font-size: 0.88rem;
+      }
+
+      .step-content-desc {
+        font-size: 0.82rem;
+      }
+
+      .step-tip-badge {
+        font-size: 0.68rem;
+      }
+
+      .ing-row {
+        padding: 8px 10px;
+      }
+
+      .ing-n {
+        font-size: 0.8rem;
+      }
+
+      .ing-q {
+        font-size: 0.75rem;
+      }
+
+      .nutr-main {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .nutr-big {
+        padding: 12px 10px;
+        border-radius: 10px;
+      }
+
+      .nutr-big-val {
+        font-size: 1.3rem;
+      }
+
+      .nutr-minor {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+
+      .nutr-minor-item {
+        padding: 8px 6px;
+      }
+
+      .tip-item {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+
+      .tip-text {
+        font-size: 0.8rem;
+      }
+
+      .cook-left {
+        padding: 16px 14px;
+        gap: 16px;
+      }
+
+      .step-main-title {
+        font-size: 1.2rem;
+      }
+
+      .step-main-desc {
+        font-size: 0.88rem;
+        padding: 14px;
+        border-radius: 12px;
+      }
+
+      .step-tip-box {
+        padding: 12px 14px;
+      }
+
+      .timer-box {
+        padding: 12px 14px;
+        border-radius: 12px;
+      }
+
+      .timer-display {
+        font-size: 1.4rem;
+        min-width: 60px;
+      }
+
+      .timer-btn {
+        padding: 7px 12px;
+        font-size: 0.78rem;
+      }
+
+      .snav-btn {
+        padding: 10px 16px;
+        font-size: 0.82rem;
+        border-radius: 10px;
+      }
+
+      .cook-right {
+        padding: 16px;
+        max-height: 250px;
+      }
+
+      .voice-panel {
+        padding: 14px;
+      }
+
+      .mic-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
+      }
+
+      .cmd-pill {
+        padding: 5px 10px;
+        font-size: 0.72rem;
+      }
+
+      .complete-emoji {
+        font-size: 3.5rem;
+      }
+
+      .complete-title {
+        font-size: 1.5rem;
+      }
+
+      .ca-btn {
+        padding: 12px 20px;
+        font-size: 0.82rem;
+      }
+
+      .exit-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
       }
     }
   </style>

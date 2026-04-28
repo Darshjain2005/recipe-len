@@ -500,15 +500,64 @@
       }
 
       nav {
-        padding: 16px 20px;
+        padding: 14px 16px;
+      }
+
+      nav .badge {
+        font-size: 0.62rem;
+        padding: 3px 8px;
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .logo-text {
+        font-size: 1.15rem;
       }
 
       .hero {
-        padding: 100px 20px 40px;
+        padding: 100px 16px 40px;
+        min-height: auto;
       }
 
       .hero h1 {
-        font-size: 3rem;
+        font-size: clamp(2.2rem, 10vw, 3rem);
+      }
+
+      .hero p {
+        font-size: 1rem;
+        margin-bottom: 40px;
+      }
+
+      .chef-card {
+        padding: 28px 22px;
+        border-radius: 18px;
+      }
+
+      .card-icon-wrap {
+        width: 56px;
+        height: 56px;
+        font-size: 26px;
+        border-radius: 14px;
+        margin-bottom: 18px;
+      }
+
+      .card-title {
+        font-size: 1.45rem;
+      }
+
+      .card-desc {
+        font-size: 0.85rem;
+      }
+
+      .card-features li {
+        font-size: 0.82rem;
+      }
+
+      .card-cta {
+        font-size: 0.85rem;
+        padding: 11px 20px;
       }
 
       .stats-row {
@@ -518,6 +567,53 @@
       .stat-item {
         flex: 0 0 50%;
         border-bottom: 1px solid var(--border);
+        padding: 20px 16px;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+      }
+
+      .stat-label {
+        font-size: 0.7rem;
+      }
+
+      footer {
+        padding: 28px 16px;
+        margin-top: 50px;
+        font-size: 0.75rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      nav .badge {
+        display: none;
+      }
+
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .hero p {
+        font-size: 0.9rem;
+      }
+
+      .hero-eyebrow {
+        font-size: 0.7rem;
+        padding: 5px 12px;
+      }
+
+      .chef-card {
+        padding: 22px 18px;
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+      }
+
+      .card-badge {
+        font-size: 0.58rem;
+        padding: 2px 8px;
       }
     }
   </style>
